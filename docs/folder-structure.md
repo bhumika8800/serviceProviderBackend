@@ -4,14 +4,14 @@
 backend/
 │
 ├── config/
-│   ├── db.js
-│   ├── firebase.js
-│   ├── cloudinary.js
+│   ├── db.js            ✅ implemented
+│   ├── firebase.js      ✅ implemented
+│   ├── cloudinary.js    ✅ implemented
 │   └── razorpay.js
 │
 ├── controllers/
-│   ├── authController.js
-│   ├── userController.js
+│   ├── authController.js ✅ implemented
+│   ├── userController.js ✅ implemented
 │   ├── serviceController.js
 │   ├── bookingController.js
 │   ├── paymentController.js
@@ -20,25 +20,25 @@ backend/
 │   └── reviewController.js
 │
 ├── middleware/
-│   ├── authMiddleware.js
+│   ├── authMiddleware.js ✅ implemented
 │   ├── adminMiddleware.js
-│   ├── uploadMiddleware.js
-│   └── errorMiddleware.js
+│   ├── uploadMiddleware.js ✅ implemented
+│   └── errorMiddleware.js ✅ implemented
 │
 ├── models/
-│   ├── User.js
-│   ├── Category.js
-│   ├── Service.js
-│   ├── Booking.js
-│   ├── Payment.js
-│   ├── Notification.js
-│   ├── Complaint.js
-│   ├── Review.js
-│   └── Query.js
+│   ├── User.js          ✅ implemented
+│   ├── Category.js      ✅ implemented
+│   ├── Service.js       ✅ implemented
+│   ├── Booking.js       ✅ implemented
+│   ├── Payment.js       ✅ implemented
+│   ├── Notification.js  ✅ implemented
+│   ├── Complaint.js     ✅ implemented
+│   ├── Review.js        ✅ implemented
+│   └── Query.js         ✅ implemented
 │
 ├── routes/
-│   ├── authRoutes.js
-│   ├── userRoutes.js
+│   ├── authRoutes.js    ✅ implemented
+│   ├── userRoutes.js    ✅ implemented
 │   ├── serviceRoutes.js
 │   ├── bookingRoutes.js
 │   ├── paymentRoutes.js
@@ -47,8 +47,12 @@ backend/
 │   └── notificationRoutes.js
 │
 ├── utils/
+│   ├── ApiError.js      ✅ implemented
+│   ├── serialize.js     ✅ implemented (camelCase serializer)
+│   └── validate.js      ✅ implemented
 ├── uploads/
-├── app.js
-├── server.js
-└── .env
+├── app.js               ✅ implemented (middleware + route mounting)
+├── server.js            ✅ implemented (startup: dotenv + DB + listen)
+├── index.js             ✅ entry point (requires server.js)
+└── .env / .env.example
 ```
