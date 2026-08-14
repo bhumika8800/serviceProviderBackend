@@ -12,7 +12,7 @@ backend/
 ├── controllers/
 │   ├── authController.js ✅ implemented
 │   ├── userController.js ✅ implemented
-│   ├── serviceController.js
+│   ├── serviceController.js ✅ implemented
 │   ├── bookingController.js
 │   ├── paymentController.js
 │   ├── complaintController.js
@@ -39,7 +39,7 @@ backend/
 ├── routes/
 │   ├── authRoutes.js    ✅ implemented
 │   ├── userRoutes.js    ✅ implemented
-│   ├── serviceRoutes.js
+│   ├── serviceRoutes.js ✅ implemented
 │   ├── bookingRoutes.js
 │   ├── paymentRoutes.js
 │   ├── reviewRoutes.js
@@ -49,7 +49,8 @@ backend/
 ├── utils/
 │   ├── ApiError.js      ✅ implemented
 │   ├── serialize.js     ✅ implemented (camelCase serializer)
-│   └── validate.js      ✅ implemented
+│   ├── validate.js      ✅ implemented
+│   └── seed.js          ✅ implemented (6 categories + 18 services)
 ├── uploads/
 ├── app.js               ✅ implemented (middleware + route mounting)
 ├── server.js            ✅ implemented (startup: dotenv + DB + listen)

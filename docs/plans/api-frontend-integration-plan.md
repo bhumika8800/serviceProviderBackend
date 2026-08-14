@@ -1,6 +1,6 @@
 # Backend API Development & Frontend Integration Plan
 
-> **Status:** In progress — contract alignment + Phase 0 + Phase 1 (auth) executed. See [§9 Progress Tracker](#9-progress-tracker).
+> **Status:** In progress — Phases 0–3 executed (contract, app shell, auth, users, categories & services). See [§9 Progress Tracker](#9-progress-tracker).
 
 ## 1. Goal
 
@@ -20,14 +20,14 @@ Build the complete Express.js API surface defined in `docs/api-endpoints.md` (ba
 
 | Area | Status | Details |
 |------|--------|---------|
-| Express app | 🟡 | `index.js` only (root route + DB connect). No `app.js`/`server.js` split. |
+| Express app | ✅ | `app.js`/`server.js` split; `index.js` entry; middleware chain morgan → CORS → json → `/api/v1` routes → 404 → error handler. |
 | Database | ✅ | MongoDB Atlas connected via Mongoose 9 (`config/db.js`, DNS-fallback built in). |
-| Models | ✅ | All 9 models exist in `models/`: User, Category, Service, Booking, Payment, Notification, Complaint, Review, Query. |
-| Routes / Controllers | ❌ | None. |
-| Middleware | ❌ | None (no auth/JWT, no admin RBAC, no error handler, no upload). |
-| Integrations | ❌ | No `config/firebase.js`, `config/cloudinary.js`, `config/razorpay.js`. |
-| Validation / Logging / CORS / Rate limit | ❌ | express-validator, morgan, cors, rate-limit not installed. |
-| Dependencies installed | 🟡 | `express@5`, `mongoose@9`, `dotenv` only. |
+| Models | ✅ | All 9 models exist in `models/`; `created_at`/`updated_at` timestamps; User has `firebase_uid`/`profile_complete`, address `label`/`is_default`; Service has text + category indexes. |
+| Routes / Controllers | 🟡 | auth + user + service done (Phases 1–3); booking, payment, notification, review, complaint, query, admin pending. |
+| Middleware | 🟡 | `authMiddleware` (`requireAuth`/`requireRoles`), `errorMiddleware`, `uploadMiddleware` done; cart/booking RBA via existing `requireRoles`. |
+| Integrations | 🟡 | `config/firebase.js` + `config/cloudinary.js` done; `config/razorpay.js` pending (Phase 6). |
+| Validation / Logging / CORS / Rate limit | ✅ | express-validator + `utils/validate.js` on all bodies; morgan, cors, express-rate-limit (auth verify). |
+| Dependencies installed | ✅ | jwt, validator, cors, morgan, rate-limit, firebase-admin, multer, cloudinary, razorpay installed. |
 
 ### 2.2 Frontend — `D:\Projects\ServiceProviderApp`
 
@@ -57,15 +57,15 @@ The frontend types and the backend models do **not** match. Either the backend m
 | Frontend type (camelCase) | Backend model field (snake_case) | Notes |
 |---------------------------|-----------------------------------|-------|
 | `User.id` | `User._id` | Convert `_id` → `id` in responses. |
-| `User.firebaseUid` | *(missing)* | Backend User model has **no `firebase_uid`** — must be added for `/auth/verify` lookups. |
-| `User.profileComplete` | *(missing)* | Backend model has **no `profile_complete`** — auth flow requires it. |
+| `User.firebaseUid` | `User.firebase_uid` | ✅ added (unique, sparse) for `/auth/verify` lookups. |
+| `User.profileComplete` | `User.profile_complete` | ✅ added (Boolean, default false). |
 | `User.firstName` | `User.first_name` | |
 | `User.lastName` | `User.last_name` | |
 | `User.avatar` | `User.img_url` | |
 | `User.isActive` | `User.is_active` | |
 | `User.role: 'customer' \| 'admin' \| 'service_provider'` | `role: 'customer' \| 'provider' \| 'admin'` | **Conflict**: `service_provider` vs `provider`. Pick one. |
-| `Address.label` (`home/work/other`) | *(missing)* | Backend addressSchema has **no `label`** or `is_default`. |
-| `Address.isDefault` | *(missing)* | |
+| `Address.label` (`home/work/other`) | `address.label` | ✅ added to addressSchema. |
+| `Address.isDefault` | `address.is_default` | ✅ added (Boolean). |
 | `Address.lat/lng` | `address.lat/lng` | Matches — ok. (frontend db-table.md said latitude/longitude; use `lat/lng`.) |
 | `Service.categoryId` | `Service.category_id` | |
 | `Service.durationMins` | `Service.duration_mins` | |
@@ -104,10 +104,10 @@ with pagination as `{ success, data: [], pagination: { page, limit, total, total
 - Add a lightweight serializer per model (`utils/serialize.js`) or a `toJSON` transform on each Mongoose schema mapping `_id→id`, `created_at→createdAt`, etc. Keeps the existing frontend types 100% intact and matches the frontend docs' conventions.
 
 **Model changes required regardless of the above:**
-1. `User`: add `firebase_uid` (unique, indexed) + `profile_complete` (Boolean, default false).
-2. `User` address subdocument: add `label` (enum home/work/other) + `is_default` (Boolean). Use `lat`/`lng` (already present).
-3. `User.role`: resolve `service_provider` vs `provider` (recommend backend enum `customer|provider|admin`, and update the frontend `UserRole` type to `'customer' | 'provider' | 'admin'`).
-4. Add Mongoose `timestamps` to models that the docs list `created_at/updated_at` on (User, Service, Booking, Payment, Notification, Complaint, Review, Query) — currently only `User` has timestamps.
+1. `User`: add `firebase_uid` (unique, indexed) + `profile_complete` (Boolean, default false). ✅ done
+2. `User` address subdocument: add `label` (enum home/work/other) + `is_default` (Boolean). Use `lat`/`lng` (already present). ✅ done
+3. `User.role`: resolve `service_provider` vs `provider` (recommend backend enum `customer|provider|admin`, and update the frontend `UserRole` type to `'customer' | 'provider' | 'admin'`). ✅ backend done (`customer|provider|admin`); frontend `UserRole` still needs updating.
+4. Add Mongoose `timestamps` to models that the docs list `created_at/updated_at` on (User, Service, Booking, Payment, Notification, Complaint, Review, Query) — currently only `User` has timestamps. ✅ done (all listed models).
 
 ---
 
@@ -318,8 +318,8 @@ Critical path: **contract → auth → services seed → bookings** (enables the
 | Phase 2 — Users & profile (`GET/PATCH /users/me`, address CRUD, upload-image) | ✅ |
 | Phase 2 — `config/cloudinary.js` + `middleware/uploadMiddleware.js` (Multer memory storage) | ✅ |
 | Phase 2 — camelCase request bodies (`firstName`, `avatar`, `isDefault`…) + `img_url`→`avatar` in serializer | ✅ |
-| Phase 3 — Categories & Services + seed | ⬜ |
-| Phase 3 — Categories & Services + seed | ⬜ |
+| Phase 3 — Categories & Services (`GET /categories`, services CRUD with filters/pagination, text index, soft delete, RBAC) | ✅ |
+| Phase 3 — `utils/seed.js` (6 categories + 18 services, `--reset` flag) | ✅ |
 | Phase 4 — Cart | ⬜ |
 | Phase 5 — Bookings | ⬜ |
 | Phase 6 — Payments (Razorpay) | ⬜ |
