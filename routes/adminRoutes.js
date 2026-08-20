@@ -3,7 +3,12 @@ const { body, param, query } = require('express-validator');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { requireAdmin } = require('../middleware/adminMiddleware');
 const { validate } = require('../utils/validate');
-const { listUsers, toggleUserActive, getDashboardStats } = require('../controllers/adminController');
+const {
+  listUsers,
+  toggleUserActive,
+  listBookings,
+  getDashboardStats,
+} = require('../controllers/adminController');
 
 const router = express.Router();
 
@@ -25,6 +30,15 @@ router.patch(
   body('isActive').isBoolean().withMessage('isActive must be a boolean'),
   validate,
   toggleUserActive
+);
+
+router.get(
+  '/admin/bookings',
+  query('status').optional().isIn(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']).withMessage('Invalid status'),
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1 }).withMessage('limit must be a positive integer'),
+  validate,
+  listBookings
 );
 
 router.get('/admin/stats', getDashboardStats);

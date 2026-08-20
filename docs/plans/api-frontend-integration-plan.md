@@ -1,6 +1,6 @@
 # Backend API Development & Frontend Integration Plan
 
-> **Status:** In progress — Phases 0–10 executed (contract, app shell, auth, users, categories & services, cart, bookings, payments, notifications, reviews, complaints, queries); Phase 11 admin done. See [§9 Progress Tracker](#9-progress-tracker).
+> **Status:** Phases 0–11 done (backend committed `2e9f132`). Frontend integration workstream (§5) complete — all screens swapped from mock to live API, `tsc` + `eslint` clean. See [§9 Progress Tracker](#9-progress-tracker).
 
 ## 1. Goal
 
@@ -329,4 +329,17 @@ Critical path: **contract → auth → services seed → bookings** (enables the
 | Phase 9 — Complaints (file against completed booking, list/detail, admin status update → complaint notification) | ✅ |
 | Phase 10 — Queries (guest or logged-in via `optionalAuth`, admin list, admin close, rate limit) | ✅ |
 | Phase 11 — Admin (user list/search, block/unblock, dashboard stats) + hardening (JWT on all protected routes, RBAC, validator on all bodies, rawBody capture for webhooks) | ✅ |
-| Frontend workstream (§5) | ⬜ |
+| Phase 11 — Admin bookings list (`GET /admin/bookings` w/ status filter, used by AdminBookingsScreen) | ✅ |
+| §5.1 — `src/config/env.ts` (platform-aware `API_BASE_URL` + `DEV_API_HOST` override); `apiClient.ts` imports it | ✅ |
+| §5.2 — `servicesCatalog.ts`, `bookingService.ts` (incl. `updateBookingStatus`), `userService.ts` (incl. `completeProfile`), `notificationService.ts`, `adminService.ts` + hooks (`useServices/useBookings/useUserProfile/useNotifications/useAdmin`) | ✅ |
+| §5.3 — `useAuthStore` wrapped with zustand `persist` (AsyncStorage `auth-storage`) | ✅ |
+| §5.4 — ServicesScreen (`useCategories` + `useServices`) | ✅ |
+| §5.4 — ServiceDetailScreen (`useService`, Book Now → Booking) | ✅ |
+| §5.4 — BookingScreen (`useCreateBooking` + address select, date/time chips) | ✅ |
+| §5.4 — MyBookingsScreen (`useBookings` + `useCancelBooking`, active/history tabs) | ✅ |
+| §5.4 — ProfileScreen (`useUserProfile` + edit/avatar/address mutations, auth-store sync) | ✅ |
+| §5.4 — NotificationsScreen (list, unread badge, mark read / mark all read) | ✅ |
+| §5.4 — Admin screens (Dashboard stats, Clients list/search/block + ClientDetail, Services activate/deactivate, Bookings status advance) | ✅ |
+| §5.4 — Admin routing: `AppNavigator` renders `AdminTabs` for `role === 'admin'`; `AdminClientDetail` route | ✅ |
+| §5.5 — CompleteProfileScreen + gating (`profileComplete === false` → CompleteProfile before tabs) | ✅ |
+| Frontend workstream (§5) — typecheck `tsc --noEmit` + `eslint` clean (1 pre-existing warning in UserTabNavigator) | ✅ |

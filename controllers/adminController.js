@@ -5,7 +5,7 @@ const Payment = require('../models/Payment');
 const Complaint = require('../models/Complaint');
 const Query = require('../models/Query');
 const ApiError = require('../utils/ApiError');
-const { serializeList } = require('../utils/serialize');
+const { serialize, serializeList } = require('../utils/serialize');
 
 const listUsers = async (req, res, next) => {
   try {
@@ -68,6 +68,35 @@ const toggleUserActive = async (req, res, next) => {
   }
 };
 
+const listBookings = async (req, res, next) => {
+  try {
+    const { status, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+    const filter = {};
+    if (status) filter.status = status;
+
+    const [total, docs] = await Promise.all([
+      Booking.countDocuments(filter),
+      Booking.find(filter).sort({ created_at: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
+    ]);
+
+    res.json({
+      success: true,
+      data: serializeList(docs),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getDashboardStats = async (req, res, next) => {
   try {
     const [totalUsers, activeUsers, totalServices, bookingsByStatus, revenueAgg, openComplaints, openQueries] =
@@ -106,4 +135,4 @@ const getDashboardStats = async (req, res, next) => {
   }
 };
 
-module.exports = { listUsers, toggleUserActive, getDashboardStats };
+module.exports = { listUsers, toggleUserActive, listBookings, getDashboardStats };
