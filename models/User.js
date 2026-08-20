@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['customer', 'provider', 'admin'], default: 'customer' },
     addresses: [addressSchema],
     cart_items: [cartItemSchema],
+    fcm_token: String,
     is_active: { type: Boolean, default: true },
     profile_complete: { type: Boolean, default: false },
   },

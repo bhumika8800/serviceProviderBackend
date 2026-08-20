@@ -1,6 +1,6 @@
 # Backend API Development & Frontend Integration Plan
 
-> **Status:** In progress — Phases 0–3 executed (contract, app shell, auth, users, categories & services). See [§9 Progress Tracker](#9-progress-tracker).
+> **Status:** In progress — Phases 0–10 executed (contract, app shell, auth, users, categories & services, cart, bookings, payments, notifications, reviews, complaints, queries); Phase 11 admin done. See [§9 Progress Tracker](#9-progress-tracker).
 
 ## 1. Goal
 
@@ -320,12 +320,13 @@ Critical path: **contract → auth → services seed → bookings** (enables the
 | Phase 2 — camelCase request bodies (`firstName`, `avatar`, `isDefault`…) + `img_url`→`avatar` in serializer | ✅ |
 | Phase 3 — Categories & Services (`GET /categories`, services CRUD with filters/pagination, text index, soft delete, RBAC) | ✅ |
 | Phase 3 — `utils/seed.js` (6 categories + 18 services, `--reset` flag) | ✅ |
-| Phase 4 — Cart | ⬜ |
-| Phase 5 — Bookings | ⬜ |
-| Phase 6 — Payments (Razorpay) | ⬜ |
-| Phase 7 — Notifications | ⬜ |
-| Phase 8 — Reviews | ⬜ |
-| Phase 9 — Complaints | ⬜ |
-| Phase 10 — Queries | ⬜ |
-| Phase 11 — Admin + hardening | ⬜ |
+| Phase 4 — Cart (`GET/POST /cart`, `PATCH/DELETE /cart/:serviceId`, `DELETE /cart`, RBAC via `requireAuth`) | ✅ |
+| Phase 4 — Cart response enriched with service details (name, price, images) + qty cap (1–99) | ✅ |
+| Phase 5 — Bookings (create with service+address snapshots, list w/ status filter, detail, cancel, admin/provider status update, lifecycle validation, indexes) | ✅ |
+| Phase 6 — Payments (Razorpay create-order, HMAC verify, webhook w/ secret + raw body, payment records; booking→confirmed on success, notifications) | ✅ |
+| Phase 7 — Notifications (list unread-first, mark read, mark-all-read; `utils/notification.js` + `utils/fcm.js`; `User.fcm_token`) | ✅ |
+| Phase 8 — Reviews (completed-booking-only, one per booking via unique index, transactional avg_rating/review_count, service reviews) | ✅ |
+| Phase 9 — Complaints (file against completed booking, list/detail, admin status update → complaint notification) | ✅ |
+| Phase 10 — Queries (guest or logged-in via `optionalAuth`, admin list, admin close, rate limit) | ✅ |
+| Phase 11 — Admin (user list/search, block/unblock, dashboard stats) + hardening (JWT on all protected routes, RBAC, validator on all bodies, rawBody capture for webhooks) | ✅ |
 | Frontend workstream (§5) | ⬜ |

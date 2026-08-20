@@ -21,6 +21,7 @@ The database uses MongoDB with Mongoose. Key design decisions:
 | role | enum: customer, provider, admin | default: customer |
 | addresses | [Address subdocument] | embedded |
 | cart_items | [{service_id, quantity, added_at}] | embedded |
+| fcm_token | String | push notification token registered by the app |
 | is_active | Boolean | default true |
 | created_at / updated_at | Date | |
 
@@ -58,16 +59,23 @@ The database uses MongoDB with Mongoose. Key design decisions:
 | status | enum: pending, confirmed, in_progress, completed, cancelled | |
 | is_active | Boolean | |
 
+Indexes: `user_id + created_at`, `user_id + status`, `service_snapshot.service_id`, `booking_date`, `status`.
+
 ### Payment
 
 | Field | Type | Notes |
 |-------|------|-------|
 | booking_id | ObjectId → Booking | |
-| payment_mode | enum: card, upi, netbanking, wallet, cash | |
+| payment_mode | enum: card, upi, netbanking, wallet, cash | set from Razorpay method on capture |
 | transaction_id | String | gateway IDs are alphanumeric |
+| razorpay_order_id | String, unique sparse | Razorpay order id (set at order creation) |
+| razorpay_payment_id | String | Razorpay payment id (set on capture/verify) |
 | amount | Decimal128 | |
 | status | enum: pending, successful, failed, refunded | |
 | payment_date | Date | |
+| error | String | failure reason from gateway |
+
+Indexes: `booking_id`, `status`.
 
 ### Notification
 

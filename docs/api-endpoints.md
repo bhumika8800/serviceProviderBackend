@@ -92,3 +92,11 @@ All routes are prefixed with `/api/v1`. Protected routes require `Authorization:
 | POST | /queries | Submit a query (guest or logged-in) |
 | GET | /queries | List queries (admin) |
 | PATCH | /queries/:id/close | Mark resolved/closed (admin) |
+
+## Admin
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /admin/users | List users (admin, filter by role/search, paginated) |
+| PATCH | /admin/users/:id/active | Block/unblock a user (admin) |
+| GET | /admin/stats | Dashboard aggregates: bookings by status, revenue, active users, services, open complaints/queries |

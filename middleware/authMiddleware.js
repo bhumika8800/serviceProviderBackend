@@ -26,6 +26,25 @@ const requireAuth = async (req, res, next) => {
   }
 };
 
+const optionalAuth = async (req, res, next) => {
+  try {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      if (user && user.is_active) {
+        req.user = user;
+        req.userId = user._id.toString();
+      }
+    }
+    next();
+  } catch (err) {
+    next();
+  }
+};
+
 const requireRoles = (...roles) => (req, res, next) => {
   if (!req.user) {
     return next(new ApiError(401, 'Authentication required', 'UNAUTHORIZED'));
@@ -36,4 +55,4 @@ const requireRoles = (...roles) => (req, res, next) => {
   next();
 };
 
-module.exports = { requireAuth, requireRoles };
+module.exports = { requireAuth, requireRoles, optionalAuth };
