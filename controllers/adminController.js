@@ -5,7 +5,7 @@ const Payment = require('../models/Payment');
 const Complaint = require('../models/Complaint');
 const Query = require('../models/Query');
 const ApiError = require('../utils/ApiError');
-const { serialize, serializeList } = require('../utils/serialize');
+const { serializeList } = require('../utils/serialize');
 
 const listUsers = async (req, res, next) => {
   try {

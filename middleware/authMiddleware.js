@@ -40,7 +40,7 @@ const optionalAuth = async (req, res, next) => {
       }
     }
     next();
-  } catch (err) {
+  } catch {
     next();
   }
 };

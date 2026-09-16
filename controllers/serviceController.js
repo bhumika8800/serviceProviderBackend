@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const Category = require('../models/Category');
 const Service = require('../models/Service');
 const ApiError = require('../utils/ApiError');

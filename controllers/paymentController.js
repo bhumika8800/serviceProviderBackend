@@ -97,7 +97,7 @@ const verifySignature = (orderId, paymentId, signature) => {
 
 const verifyPayment = async (req, res, next) => {
   try {
-    const { orderId, paymentId, signature, bookingId } = req.body;
+    const { orderId, paymentId, signature } = req.body;
 
     const payment = await Payment.findOne({ razorpay_order_id: orderId });
     if (!payment) throw new ApiError(404, 'Payment not found', 'NOT_FOUND');
