@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
     first_name: { type: String, trim: true },
     last_name: { type: String, trim: true },
     email: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
-    phone: { type: String, required: true },
+    phone: { type: String, trim: true },
     img_url: String,
     role: { type: String, enum: ['customer', 'provider', 'admin'], default: 'customer' },
     addresses: [addressSchema],

@@ -23,10 +23,20 @@ const verify = async (req, res, next) => {
 
     let user = await User.findOne({ firebase_uid: decoded.uid });
 
+    if (!user && decoded.email) {
+      user = await User.findOne({ email: decoded.email.toLowerCase() });
+      if (user) {
+        user.firebase_uid = decoded.uid;
+        if (!user.img_url && decoded.picture) user.img_url = decoded.picture;
+      }
+    }
+
     if (!user) {
       user = await User.create({
         firebase_uid: decoded.uid,
-        phone: decoded.phone_number || '',
+        phone: decoded.phone_number || undefined,
+        email: decoded.email || undefined,
+        img_url: decoded.picture || undefined,
         is_active: true,
         profile_complete: false,
       });

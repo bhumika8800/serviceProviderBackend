@@ -1,9 +1,12 @@
 const express = require('express');
 const { body, param, query } = require('express-validator');
-const { requireAuth, requireRoles } = require('../middleware/authMiddleware');
+const { requireAuth, requireRoles, optionalAuth } = require('../middleware/authMiddleware');
 const { validate } = require('../utils/validate');
 const {
   listCategories,
+  createCategory,
+  updateCategory,
+  deactivateCategory,
   listServices,
   getService,
   createService,
@@ -15,16 +18,51 @@ const router = express.Router();
 
 router.get(
   '/categories',
+  optionalAuth,
   query('parentId').optional(),
+  query('includeInactive').optional().isBoolean().withMessage('includeInactive must be a boolean'),
   validate,
   listCategories
 );
 
+router.post(
+  '/categories',
+  requireAuth,
+  requireRoles('admin'),
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('parentId').optional({ nullable: true }).isMongoId().withMessage('Invalid parent category id'),
+  validate,
+  createCategory
+);
+
+router.patch(
+  '/categories/:id',
+  requireAuth,
+  requireRoles('admin'),
+  param('id').isMongoId().withMessage('Invalid category id'),
+  body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
+  body('parentId').optional({ nullable: true }).isMongoId().withMessage('Invalid parent category id'),
+  body('isActive').optional().isBoolean().withMessage('isActive must be a boolean'),
+  validate,
+  updateCategory
+);
+
+router.delete(
+  '/categories/:id',
+  requireAuth,
+  requireRoles('admin'),
+  param('id').isMongoId().withMessage('Invalid category id'),
+  validate,
+  deactivateCategory
+);
+
 router.get(
   '/services',
+  optionalAuth,
   query('q').optional().isString().withMessage('q must be a string'),
   query('categoryId').optional().isMongoId().withMessage('Invalid category id'),
   query('tag').optional().isString().withMessage('tag must be a string'),
+  query('includeInactive').optional().isBoolean().withMessage('includeInactive must be a boolean'),
   query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
   query('limit').optional().isInt({ min: 1 }).withMessage('limit must be a positive integer'),
   validate,
@@ -33,7 +71,9 @@ router.get(
 
 router.get(
   '/services/:id',
+  optionalAuth,
   param('id').isMongoId().withMessage('Invalid service id'),
+  query('includeInactive').optional().isBoolean().withMessage('includeInactive must be a boolean'),
   validate,
   getService
 );

@@ -171,6 +171,120 @@ describe('Service Endpoints', () => {
     });
   });
 
+  describe('POST /api/v1/categories', () => {
+    it('should return 401 when not authenticated', async () => {
+      const res = await request(app)
+        .post('/api/v1/categories')
+        .send({ name: 'New Category' });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 when user is not an admin', async () => {
+      const user = await createTestUser({ role: 'provider' });
+      const token = generateToken(user);
+
+      const res = await request(app)
+        .post('/api/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'New Category' });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should create a category when user is admin', async () => {
+      const admin = await createTestUser({ role: 'admin' });
+      const token = generateToken(admin);
+
+      const res = await request(app)
+        .post('/api/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'New Category' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.name).toBe('New Category');
+      expect(res.body.data.parentId).toBeNull();
+    });
+
+    it('should reject duplicate category names', async () => {
+      const admin = await createTestUser({ role: 'admin' });
+      const token = generateToken(admin);
+      await createTestCategory({ name: 'Duplicate' });
+
+      const res = await request(app)
+        .post('/api/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Duplicate' });
+
+      expect(res.status).toBe(409);
+      expect(res.body.success).toBe(false);
+    });
+  });
+
+  describe('PATCH /api/v1/categories/:id', () => {
+    it('should rename a category', async () => {
+      const admin = await createTestUser({ role: 'admin' });
+      const token = generateToken(admin);
+      const category = await createTestCategory({ name: 'Old Name' });
+
+      const res = await request(app)
+        .patch(`/api/v1/categories/${category._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'New Name' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.name).toBe('New Name');
+    });
+
+    it('should deactivate a category', async () => {
+      const admin = await createTestUser({ role: 'admin' });
+      const token = generateToken(admin);
+      const category = await createTestCategory();
+
+      const res = await request(app)
+        .patch(`/api/v1/categories/${category._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ isActive: false });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.isActive).toBe(false);
+    });
+  });
+
+  describe('Inactive visibility', () => {
+    it('should hide inactive categories from public but show them to admins', async () => {
+      const admin = await createTestUser({ role: 'admin' });
+      const token = generateToken(admin);
+      await createTestCategory({ name: 'Active Cat' });
+      await createTestCategory({ name: 'Hidden Cat', is_active: false });
+
+      const publicRes = await request(app).get('/api/v1/categories');
+      expect(publicRes.body.data.length).toBe(1);
+
+      const adminRes = await request(app)
+        .get('/api/v1/categories?includeInactive=true')
+        .set('Authorization', `Bearer ${token}`);
+      expect(adminRes.body.data.length).toBe(2);
+    });
+
+    it('should hide inactive services from public but show them to admins', async () => {
+      const admin = await createTestUser({ role: 'admin' });
+      const token = generateToken(admin);
+      const category = await createTestCategory();
+      await createTestService(category._id, { name: 'Visible' });
+      await createTestService(category._id, { name: 'Hidden', is_active: false });
+
+      const publicRes = await request(app).get('/api/v1/services');
+      expect(publicRes.body.data.length).toBe(1);
+
+      const adminRes = await request(app)
+        .get('/api/v1/services?includeInactive=true')
+        .set('Authorization', `Bearer ${token}`);
+      expect(adminRes.body.data.length).toBe(2);
+    });
+  });
+
   describe('DELETE /api/v1/services/:id', () => {
     it('should soft delete service', async () => {
       const admin = await createTestUser({ role: 'admin' });

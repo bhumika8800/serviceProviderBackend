@@ -8,6 +8,13 @@ jest.mock('../config/firebase', () => {
       err.code = 'auth/id-token-expired';
       throw err;
     }
+    if (token === 'google_token') {
+      return {
+        uid: 'mock_google_uid',
+        email: 'google@example.com',
+        picture: 'https://example.com/avatar.jpg',
+      };
+    }
     return { uid: 'mock_firebase_uid', phone_number: '+1234567890' };
   });
 
@@ -71,6 +78,36 @@ describe('Auth Endpoints', () => {
       expect(res.body.data).toHaveProperty('token');
       expect(res.body.data).toHaveProperty('user');
       expect(res.body.data.user.firebaseUid).toBe('mock_firebase_uid');
+    });
+
+    it('should allow Google accounts without a phone number', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/verify')
+        .send({ idToken: 'google_token' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.firebaseUid).toBe('mock_google_uid');
+      expect(res.body.data.user.email).toBe('google@example.com');
+      expect(res.body.data.user.phone).toBeUndefined();
+    });
+
+    it('should link a pre-provisioned admin by email', async () => {
+      const User = require('../models/User');
+      await User.create({
+        email: 'google@example.com',
+        role: 'admin',
+        is_active: true,
+        profile_complete: true,
+      });
+
+      const res = await request(app)
+        .post('/api/v1/auth/verify')
+        .send({ idToken: 'google_token' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.user.role).toBe('admin');
+      expect(res.body.data.user.firebaseUid).toBe('mock_google_uid');
     });
   });
 

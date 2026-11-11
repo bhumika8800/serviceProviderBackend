@@ -11,7 +11,8 @@
     "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "jest --watch --forceExit --detectOpenHandles",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "make-admin": "node utils/makeAdmin.js"
   },
   "keywords": [],
   "author": "",
